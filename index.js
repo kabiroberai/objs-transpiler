@@ -1,11 +1,12 @@
-require('./uglify.js');
-
 const sweet = require('@sweet-js/core/dist/browser-sweet');
-const objs = require('raw-loader!./syntax.js');
+const sweetHelpers = require('raw-loader!@sweet-js/core/helpers.js');
 
+const objs = require('raw-loader!./syntax.js');
 const objsHelpers = require('raw-loader!./helpers.js');
-const helpers = require('raw-loader!@sweet-js/core/helpers.js');
-const allHelpers = objsHelpers + "\n" + helpers;
+
+const allHelpers = objsHelpers + "\n" + sweetHelpers;
+
+require('./uglify.js');
 
 const options = {
 	compress: {
