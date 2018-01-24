@@ -249,8 +249,6 @@ syntax OBJS_START = ctx => {
 	// otherwise, returns once it hits the end of ctx
 	function parseCtxRecursively(ctx, stopAtTerminator) {
 		let ret = #``;
-		// stores whether the last keyword was an identifier
-		// let prev = #``;
 		for (const val of ctx) {
 			if (val == null) break;
 			if (stopAtTerminator && isPunctuator(val) && unwrapped(val) === ',') break;
@@ -267,7 +265,7 @@ syntax OBJS_START = ctx => {
 				// TODO: turn bracket syntax into subscripts as well, rather than making it call msgSend)
 
 				if (isKeyword(val) && unwrapped(val) === 'super') {
-					parsed = #`__objsSuper`;
+					parsed = #`__JXSuper`;
 				} else if (isParens(val) || isBraces(val) || isBrackets(val)) {
 					const objCtx = ctx.contextify(val);
 					const ret = parseCtxRecursively(objCtx);
@@ -313,7 +311,7 @@ syntax OBJS_START = ctx => {
 
 			// get the callee
 			let callee = ret.get(-3);
-			const isSuper = isIdentifier(callee) && unwrapped(callee) === '__objsSuper';
+			const isSuper = isIdentifier(callee) && unwrapped(callee) === '__JXSuper';
 			
 			// if super, insert ^ before selector
 			const prefix = isSuper ? '^' : '';
@@ -326,7 +324,9 @@ syntax OBJS_START = ctx => {
 
 			// if not a swift call
 			if (selParts.length === 0 && !isSuper) {
-				ret = ret.concat(val);
+				// append the parsed arguments
+				const parsed = parseCtxRecursively(ctx.contextify(val));
+				ret = ret.concat(#`(${parsed})`);
 				continue;
 			}
 
@@ -341,7 +341,9 @@ syntax OBJS_START = ctx => {
 		return ret;
 	}
 
-	return parseCtxRecursively(ctx);
+	const parsed = parseCtxRecursively(ctx);
+	// if parsed is empty, return a blank statement
+	return parsed.get(0) ? parsed : #`;`;
 };
 
 // since syntax.js is appended to the start of the source code, OBJS_START becomes the first line

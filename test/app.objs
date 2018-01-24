@@ -130,6 +130,8 @@ $class hook SuperchargerTests.AppDelegate
 	const bounds = UIScreen.mainScreen().bounds();
 	NSLog("Bounds: " + bounds[1][0]);
 
+	NSLog(box([UIColor.colorWithRed(1, green: 0.5, blue: 0, alpha: 0)]));
+
 	self.someNewFunction();
 	
 	const window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen().bounds());
