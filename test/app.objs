@@ -112,6 +112,10 @@ let vc = AClass.alloc().initWithMsg("This is a message");
 NSLog(vc.someFunc());
 vc = null;
 
+
+defineFunc("strcmp", "i**", true);
+defineFunc("printf", "i*...", true);
+
 $class hook SuperchargerTests.AppDelegate
 
 - (void)someNewFunction {
@@ -127,6 +131,9 @@ $class hook SuperchargerTests.AppDelegate
 	// 	NSLog("JS EXCEPTION END");
 	// }
 	// NSLog(resourcesPath);
+	NSLog(strcmp("hello", "henlo"));
+	printf("one plus one equals %.0f\n", 1+1);
+
 	const bounds = UIScreen.mainScreen().bounds();
 	NSLog("Bounds: " + bounds[1][0]);
 
