@@ -113,8 +113,8 @@ NSLog(vc.someFunc());
 vc = null;
 
 
-defineFunc("strcmp", "i**", true);
-defineFunc("printf", "i*...", true);
+loadFunc("strcmp", "i**", true);
+loadFunc("printf", "i*...", true);
 
 $class hook SuperchargerTests.AppDelegate
 
