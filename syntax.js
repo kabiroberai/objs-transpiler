@@ -5,72 +5,6 @@ import {
 	unwrapped, nextClassName, parseType, nextType, fromKeyword
 } from 'sweet.js/helpers' for syntax;
 
-// syntax $ = ctx => {
-// 	const container = ctx.next().value;
-
-// 	if (!isBrackets(container)) throw new Error('Expected square brackets');
-	
-// 	const value = ctx.contextify(container);
-	
-// 	const marker = value.mark();
-// 	const id = value.next().value;
-// 	value.reset(marker);
-// 	let target = value.expand('expr').value;
-// 	let msgFunc = #`msgSend`;
-
-// 	const dummy = id; // use id as the lexical context
-	
-// 	let sel = '';
-// 	let args = #``;
-// 	let _first = true;
-// 	while (true) {
-// 		const first = _first;
-// 		_first = false;
-		
-// 		const selPartVal = value.next().value;
-// 		const isNewKeyword = isKeyword(selPartVal) && unwrapped(selPartVal) === 'new';
-// 		if (selPartVal === null) {
-// 			if (first) throw new Error('Expected selector');
-// 			break;
-// 		} else if (!isIdentifier(selPartVal) && !isNewKeyword) {
-// 			throw new Error('Expected selector to be identifier but got ' + JSON.stringify(selPartVal));
-// 		}
-		
-// 		const selPart = unwrapped(selPartVal);
-// 		if (selPart === ':') {
-// 			selPart = '';
-// 		} else {
-// 			const colon = value.next().value;
-// 			if (unwrapped(colon) !== ':') {
-// 				if (first && colon === null) {
-// 					sel += selPart;
-// 					break;
-// 				}
-// 				throw new Error('Expected `:`');
-// 			}
-// 		}
-// 		sel += selPart + ':';
-		
-// 		const next = value.expand('expr').value;
-// 		if (next === null) throw new Error('Expected argument');
-// 		args = args.concat(#`${next},`);
-// 	}
-	
-// 	const selLiteral = fromStringLiteral(dummy, sel);
-// 	return #`${msgFunc}(${target}, ${selLiteral}, ${args})`;
-// };
-
-// syntax $ = ctx => {
-// 	const val = ctx.next().value;
-
-// 	const testFuncs = [isBrackets, isStringLiteral, isBraces, isParens];
-// 	if (testFuncs.find(fn => fn(val))) {
-// 		return #`box(${val})`;
-// 	} else {
-// 		throw new Error('Invalid box value');
-// 	}
-// };
-
 syntax $orig = ctx => {
 	let finalArgs;
 	
@@ -237,7 +171,7 @@ syntax $class = ctx => {
 	return #`${func}(${nameLiteral}, ${additionalArgs} {${associatedObjects}}, {${methods}})`;
 };
 
-// Recursive walker
+// Custom recursive descent parser
 syntax OBJS_START = ctx => {
 	const dummy = #`x`.get(0);
 	const makeStringLiteral = v => fromStringLiteral(dummy, v);
@@ -261,8 +195,6 @@ syntax OBJS_START = ctx => {
 				// this isn't a method call, so append the token to obj and move on
 				// (if the token is a block then parse it)
 				let parsed;
-
-				// TODO: turn bracket syntax into subscripts as well, rather than making it call msgSend)
 
 				if (isKeyword(val) && unwrapped(val) === 'super') {
 					parsed = #`__JXSuper`;
