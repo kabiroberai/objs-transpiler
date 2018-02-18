@@ -122,15 +122,16 @@ $class hook SuperchargerTests.AppDelegate
 	NSLog("New function called!");
 }
 
-- (void)application:(id)application didFinishLaunchingWithOptions:(id)launchOptions {
-	// try {
-	// 	NSLog(arr.objectAtIndex(2));
-	// } catch (e) {
-	// 	NSLog("JS EXCEPTION RAISED!");
-	// 	NSLog(e.message);
-	// 	NSLog("JS EXCEPTION END");
-	// }
-	// NSLog(resourcesPath);
+- (BOOL)application:(id)application didFinishLaunchingWithOptions:(id)launchOptions {
+	const ret = $orig();
+	try {
+		NSLog(arr.objectAtIndex(2));
+	} catch (e) {
+		NSLog("JS EXCEPTION RAISED!");
+		NSLog(e.message);
+		NSLog("JS EXCEPTION END");
+	}
+	NSLog(resourcesPath);
 	NSLog(strcmp("hello", "henlo"));
 	printf("one plus one equals %.0f\n", 1+1);
 
@@ -147,7 +148,7 @@ $class hook SuperchargerTests.AppDelegate
 	const nav = UINavigationController.alloc().initWithRootViewController(vc);
 	window.setRootViewController(nav);
 	window.makeKeyAndVisible();
-	return $orig();
+	return ret;
 }
 
 $end
