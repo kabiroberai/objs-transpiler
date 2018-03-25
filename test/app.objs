@@ -108,13 +108,49 @@ HackObjC.someFuncWithBlock(defineBlock("i@?@", function (str) {
 	return 10;
 }));
 
+
+loadFunc("free", "v^v");
+loadFunc("malloc", "^vQ");
+loadFunc("JXSizeForEncoding", "Q*");
+
+var pointer = Pointer("@");
+pointer.pointee = "Hello";
+HackObjC.somePtrAcceptor(pointer);
+free(pointer);
+pointer = null;
+
+var ptr2 = Pointer("i");
+ptr2.pointee = 10;
+HackObjC.somePtrSetter(ptr2);
+NSLog("Ptr setter set: " + ptr2.pointee);
+// free(ptr2);
+
+var ptr3 = HackObjC.somePtrReturner();
+NSLog("Ptr returner returned: " + ptr3.pointee);
+var dist = ptr2.distanceTo(ptr3);
+NSLog("Actual Dist: " + dist);
+// NSLog("Dist+1: " + dist.decimalNumberByAdding(NSDecimalNumber.one()));
+ptr2[ptr2.distanceTo(ptr3)] = 57;
+NSLog("3rd with offset from 2nd: " + ptr2[ptr2.distanceTo(ptr3)]);
+free(ptr3);
+free(ptr2);
+NSLog("Freed should be weird: " + ptr3.pointee);
+
+idk = '{idk="foo"[2i]}';
+var strct = HackObjC.someStructReturner();
+strct.foo[0] = 123;
+NSLog(Array.from(strct.foo));
+
 let vc = AClass.alloc().initWithMsg("This is a message");
 NSLog(vc.someFunc());
 vc = null;
 
+loadFunc("strcmp", "i**");
+loadFunc("printf", "i*...");
 
-loadFunc("strcmp", "i**", true);
-loadFunc("printf", "i*...", true);
+CGRect = '{CGRect="origin"{CGPoint="x"d"y"d}"size"{CGSize="width"d"height"d}}';
+// CGSize = '{CGSize="width"d"height"d}';
+// CGPoint = '{CGPoint="x"d"y"d}';
 
 $class hook SuperchargerTests.AppDelegate
 
@@ -133,10 +169,14 @@ $class hook SuperchargerTests.AppDelegate
 	}
 	NSLog(resourcesPath);
 	NSLog(strcmp("hello", "henlo"));
-	printf("one plus one equals %.0f\n", 1+1);
+	printf("one plus one equals %u\ntwo plus two is (text): %s\n", "I", 1+1, "*", "four");
 
 	const bounds = UIScreen.mainScreen().bounds();
-	NSLog("Bounds: " + bounds[1][0]);
+	// TODO: Seems like `bounds.size.width = 1337` won't work since bounds.size returns a copy instead of the original rect
+	// in the JXStruct objectGetProperty, force JXConvert to not memcpy, instead using the original struct's value
+	// (structs should only be copied when being passed as method arguments)
+	bounds.size.width = 1337;
+	NSLog("Bounds: " + bounds);
 
 	NSLog(box([UIColor.colorWithRed(1, green: 0.5, blue: 0, alpha: 0)]));
 
