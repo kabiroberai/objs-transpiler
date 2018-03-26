@@ -111,6 +111,7 @@ HackObjC.someFuncWithBlock(defineBlock("i@?@", function (str) {
 
 loadFunc("free", "v^v");
 loadFunc("malloc", "^vQ");
+loadFunc("calloc", "^vQQ");
 loadFunc("JXSizeForEncoding", "Q*");
 
 var pointer = Pointer("@");
@@ -171,12 +172,13 @@ $class hook SuperchargerTests.AppDelegate
 	NSLog(strcmp("hello", "henlo"));
 	printf("one plus one equals %u\ntwo plus two is (text): %s\n", "I", 1+1, "*", "four");
 
-	const bounds = UIScreen.mainScreen().bounds();
-	// TODO: Seems like `bounds.size.width = 1337` won't work since bounds.size returns a copy instead of the original rect
-	// in the JXStruct objectGetProperty, force JXConvert to not memcpy, instead using the original struct's value
-	// (structs should only be copied when being passed as method arguments)
-	bounds.size.width = 1337;
-	NSLog("Bounds: " + bounds);
+	// const bounds = UIScreen.mainScreen().bounds();
+	// bounds.size.width = 1337;
+	// NSLog("Bounds: " + bounds);
+
+	const boundsPtr = calloc(1, JXSizeForEncoding(CGRect)).withType(CGRect);
+	boundsPtr.pointee.size.width = 1234;
+	NSLog(boundsPtr.pointee);
 
 	NSLog(box([UIColor.colorWithRed(1, green: 0.5, blue: 0, alpha: 0)]));
 
