@@ -183,14 +183,30 @@ $class hook SuperchargerTests.AppDelegate
 	NSLog(box([UIColor.colorWithRed(1, green: 0.5, blue: 0, alpha: 0)]));
 
 	self.someNewFunction();
-	
-	const window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen().bounds());
-	self.setWindow(window);
-	let vc = MyViewController.new();
-	const nav = UINavigationController.alloc().initWithRootViewController(vc);
-	window.setRootViewController(nav);
-	window.makeKeyAndVisible();
+
 	return ret;
 }
 
 $end
+
+$class hook SuperchargerTests.ViewController
+
+- (void)sayHelloWithArg1:(id)arg1 arg2:(id)arg2 {
+	NSLog("say hello called!")
+	var origFunc = orig;
+	var alert = UIAlertController.alertControllerWithTitle("hello", message: "hi", preferredStyle: 1);
+	alert.addAction(UIAlertAction.actionWithTitle("do something", style: 1, handler: defineBlock("v@?@", function (al) {
+		origFunc([arg1, arg2]);
+		const window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen().bounds());
+		UIApplication.sharedApplication().delegate().setWindow(window);
+		let vc = MyViewController.new();
+		const nav = UINavigationController.alloc().initWithRootViewController(vc);
+		window.setRootViewController(nav);
+		window.makeKeyAndVisible();
+	})));
+	self.presentViewController(alert, animated: true, completion: null);
+}
+
+$end
+
+
