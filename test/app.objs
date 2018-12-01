@@ -10,63 +10,63 @@ const UITableViewCellStyle = Object.freeze({
 	default: 0
 });
 
-$class MyViewController: UITableViewController {
+@class MyViewController : UITableViewController {
 	id _objects;
 }
 
 - (void)viewDidLoad {
-	super.viewDidLoad();
-	self.setTitle("Root View Controller");
-	self.navigationItem().setLeftBarButtonItem(self.editButtonItem());
-	const item = UIBarButtonItem.alloc().initWithBarButtonSystemItem(4, target: self, action: "addButtonTapped:");
-	self.navigationItem().setRightBarButtonItem(item);
-	_objects = NSMutableArray.array();
+	[super viewDidLoad];
+	self.title = "Root View Controller";
+	self.navigationItem.leftBarButtonItem = self.editButtonItem;
+	const item = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:4 target:self action:"addButtonTapped:"];
+	self.navigationItem.rightBarButtonItem = item;
+	_objects = [NSMutableArray array];
 }
 
 - (void)addButtonTapped:(id)sender {
-	_objects.insertObject(new Date(), atIndex: 0);
-	const path = NSIndexPath.indexPathForRow(0, inSection: 0);
-	self.tableView().insertRowsAtIndexPaths([path], withRowAnimation: UITableViewRowAnimation.automatic);
+	[_objects insertObject:new Date() atIndex:0];
+	const path = [NSIndexPath indexPathForRow:0 inSection:0];
+	[self.tableView insertRowsAtIndexPaths:[path] withRowAnimation:UITableViewRowAnimation.automatic];
 }
 
 // MARK:- Table View Data Source
 
 - (long)tableView:(id)tableView numberOfRowsInSection:(long)section {
-	return _objects.count();
+	return _objects.count;
 }
 
 - (id)tableView:(id)tableView cellForRowAtIndexPath:(id)indexPath {
-	let cell = tableView.dequeueReusableCellWithIdentifier("cell");
+	let cell = [tableView dequeueReusableCellWithIdentifier:"cell"];
 	if (!cell) {
-		cell = UITableViewCell.alloc().initWithStyle(UITableViewCellStyle.default, reuseIdentifier: "cell");
+		cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyle.default reuseIdentifier:"cell"];
 	}
-	const date = _objects.objectAtIndex(indexPath.row());
-	cell.textLabel().setText(date.description());
+	const date = [_objects objectAtIndex:indexPath.row];
+	cell.textLabel.text = [date description];
 	return cell;
 }
 
 - (void)tableView:(id)tableView commitEditingStyle:(long)editingStyle forRowAtIndexPath:(id)indexPath {
-	_objects.removeObjectAtIndex(indexPath.row());
-	NSLog(box(unbox(box({"foo": 10, "bar": indexPath}))));
-	tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.automatic);
+	[_objects removeObjectAtIndex:indexPath.row];
+	NSLog(@(unbox(@{"foo": 10, "bar": indexPath})));
+	[tableView deleteRowsAtIndexPaths:[indexPath] withRowAnimation:UITableViewRowAnimation.automatic];
 }
 
 // MARK:- Table View Delegate
 
 - (void)tableView:(id)tableView didSelectRowAtIndexPath:(id)indexPath {
-	tableView.deselectRowAtIndexPath(indexPath, animated: true);
+	[tableView deselectRowAtIndexPath:indexPath animated:true];
 }
 
 - (void)dealloc {
 	NSLog("Bye!");
 }
 
-$end
+@end
 
-$class BaseClass: NSObject
+@class BaseClass: NSObject
 
 - (id)init {
-	self = super.init();
+	self = [super init];
 	if (self) {
 		NSLog("Base init called!");
 	}
@@ -77,14 +77,14 @@ $class BaseClass: NSObject
 	NSLog("Base dealloc!");
 }
 
-$end
+@end
 
-$class AClass : BaseClass {
+@class AClass : BaseClass {
 	id foo;
 }
 
 - (id)initWithMsg:(id)msg {
-	self = super.init();
+	self = [super init];
 	if (self) {
 		foo = "stored ivar";
 		NSLog(msg);
@@ -101,33 +101,52 @@ $class AClass : BaseClass {
 	return (1 + 1 == 2);
 }
 
-$end
+@end
 
-HackObjC.someFuncWithBlock(defineBlock("i@?@", function (str) {
+[HackObjC someFuncWithBlock:^int(id str) {
 	NSLog("Block received message: " + str);
 	return 10;
-}));
+}];
 
+@struct CGSize {
+	double width;
+	double height;
+}
 
-loadFunc("free", "v^v");
-loadFunc("malloc", "^vQ");
-loadFunc("calloc", "^vQQ");
-loadFunc("JXSizeForEncoding", "Q*");
+@struct CGPoint {
+	double x;
+	double y;
+}
 
-var pointer = Pointer("@");
-pointer.pointee = "Hello";
-HackObjC.somePtrAcceptor(pointer);
+@struct CGRect {
+	struct CGPoint origin;
+	struct CGSize size;
+}
+
+@struct idk {
+	int[2] foo;
+}
+// ^ should compile to "{idk=\"foo\"[2i]}"
+
+@function void free(void *);
+@function void *calloc(unsigned long, unsigned long);
+@function int strcmp(char *, char *);
+@function int printf(char *, ...);
+
+var pointer = Pointer(@encode(id));
+*pointer = "Hello";
+[HackObjC somePtrAcceptor:pointer];
 free(pointer);
 pointer = null;
 
-var ptr2 = Pointer("i");
-ptr2.pointee = 10;
-HackObjC.somePtrSetter(ptr2);
-NSLog("Ptr setter set: " + ptr2.pointee);
+var ptr2 = Pointer(@encode(int));
+*ptr2 = 10;
+[HackObjC somePtrSetter:ptr2];
+NSLog("Ptr setter set: " + *ptr2);
 // free(ptr2);
 
-var ptr3 = HackObjC.somePtrReturner();
-NSLog("Ptr returner returned: " + ptr3.pointee);
+var ptr3 = [HackObjC somePtrReturner];
+NSLog("Ptr returner returned: " + *ptr3);
 var dist = ptr2.distanceTo(ptr3);
 NSLog("Actual Dist: " + dist);
 // NSLog("Dist+1: " + dist.decimalNumberByAdding(NSDecimalNumber.one()));
@@ -135,34 +154,26 @@ ptr2[ptr2.distanceTo(ptr3)] = 57;
 NSLog("3rd with offset from 2nd: " + ptr2[ptr2.distanceTo(ptr3)]);
 free(ptr3);
 free(ptr2);
-NSLog("Freed should be weird: " + ptr3.pointee);
+NSLog("Freed should be weird: " + *ptr3);
 
-idk = '{idk="foo"[2i]}';
-var strct = HackObjC.someStructReturner();
+var strct = [HackObjC someStructReturner];
 strct.foo[0] = 123;
 NSLog(Array.from(strct.foo));
 
-let vc = AClass.alloc().initWithMsg("This is a message");
-NSLog(vc.someFunc());
+let vc = [[AClass alloc] initWithMsg:"This is a message"];
+NSLog([vc someFunc]);
 vc = null;
 
-loadFunc("strcmp", "i**");
-loadFunc("printf", "i*...");
-
-CGRect = '{CGRect="origin"{CGPoint="x"d"y"d}"size"{CGSize="width"d"height"d}}';
-// CGSize = '{CGSize="width"d"height"d}';
-// CGPoint = '{CGPoint="x"d"y"d}';
-
-$class hook SuperchargerTests.AppDelegate
+%hook SuperchargerTests.AppDelegate
 
 - (void)someNewFunction {
 	NSLog("New function called!");
 }
 
 - (BOOL)application:(id)application didFinishLaunchingWithOptions:(id)launchOptions {
-	const ret = $orig();
+	const ret = %orig;
 	try {
-		NSLog(arr.objectAtIndex(2));
+		NSLog([arr objectAtIndex:2]);
 	} catch (e) {
 		NSLog("JS EXCEPTION RAISED!");
 		NSLog(e.message);
@@ -170,43 +181,39 @@ $class hook SuperchargerTests.AppDelegate
 	}
 	NSLog(resourcesPath);
 	NSLog(strcmp("hello", "henlo"));
-	printf("one plus one equals %u\ntwo plus two is (text): %s\n", "I", 1+1, "*", "four");
+	printf("one plus one equals %u\ntwo plus two is (text): %s\n", @cast(unsigned int)(1+1), @cast(char *)("four"));
 
-	// const bounds = UIScreen.mainScreen().bounds();
-	// bounds.size.width = 1337;
-	// NSLog("Bounds: " + bounds);
+	// const boundsPtr = Pointer(@encode(struct CGRect), true);
+	const boundsPtr = @cast(struct CGRect *)calloc(1, @sizeof(struct CGRect));
+	(*boundsPtr).size.width = 1234;
+	NSLog(*boundsPtr);
 
-	const boundsPtr = calloc(1, JXSizeForEncoding(CGRect)).withType(CGRect);
-	boundsPtr.pointee.size.width = 1234;
-	NSLog(boundsPtr.pointee);
+	NSLog(@[[UIColor colorWithRed:1 green:0.5 blue:0 alpha:0]]);
 
-	NSLog(box([UIColor.colorWithRed(1, green: 0.5, blue: 0, alpha: 0)]));
-
-	self.someNewFunction();
+	[self someNewFunction];
 
 	return ret;
 }
 
-$end
+%end
 
-$class hook SuperchargerTests.ViewController
+%hook SuperchargerTests.ViewController
 
 - (void)sayHelloWithArg1:(id)arg1 arg2:(id)arg2 {
-	NSLog("say hello called!")
+	NSLog("say hello called!");
 	var origFunc = orig;
-	var alert = UIAlertController.alertControllerWithTitle("hello", message: "hi", preferredStyle: 1);
-	alert.addAction(UIAlertAction.actionWithTitle("do something", style: 1, handler: defineBlock("v@?@", function (al) {
+	var alert = [UIAlertController alertControllerWithTitle:"hello" message:"hi" preferredStyle:1];
+	[alert addAction:[UIAlertAction actionWithTitle:"do something" style:1 handler:^(id int) {
 		origFunc([arg1, arg2]);
-		const window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen().bounds());
-		UIApplication.sharedApplication().delegate().setWindow(window);
-		let vc = MyViewController.new();
-		const nav = UINavigationController.alloc().initWithRootViewController(vc);
-		window.setRootViewController(nav);
-		window.makeKeyAndVisible();
-	})));
-	self.presentViewController(alert, animated: true, completion: null);
+		const window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+		UIApplication.sharedApplication.delegate.window = window;
+		let vc = [MyViewController new];
+		const nav = [[UINavigationController alloc] initWithRootViewController:vc];
+		window.rootViewController = nav;
+		[window makeKeyAndVisible];
+	}]];
+	[self presentViewController:alert animated:true completion:null];
 }
 
-$end
-
+%end
 

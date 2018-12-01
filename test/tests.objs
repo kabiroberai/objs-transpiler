@@ -1,0 +1,33 @@
+baz = [foo, bar];
+[foo, [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0]];
+[foo,]
+[foo];
+[];
+["foo", "bar"][0];
+
+NSLog([[NSString alloc] initWithString:"Hey"]);
+
+foo = [@("hey" + "!") stringByAppendingString:[[NSString alloc] initWithString:"what" + "?"]];
+
+NSLog(@1);
+
+%orig;
+%orig();
+%orig(foo + 1);
+%orig(foo + 1, bar);
+
+@class MyClass : NSString
+
+- (void)initWithString:(id)str {
+	NSLog(str);
+}
+
+@end
+
+%hook MyClass
+
+- (void)initWithName:(id)name {
+	%orig(what);
+}
+
+%end

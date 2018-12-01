@@ -8,16 +8,16 @@
   "author": "Kabir Oberai",
   "devDependencies": {
     "mocha": "^4.0.1",
-    "raw-loader": "^0.5.1",
     "uglify-es": "^3.0.25",
     "webpack": "^3.3.0"
-  },
-  "dependencies": {
-    "@sweet-js/core": "^3.0.11"
   },
   "scripts": {
     "build:": "uglifyjs --self -cmo uglify.js && webpack && rm uglify.js && uglifyjs ob.js -o ob.js # package standalone uglify, build everything, delete uglify, uglify package",
     "build:clean": "rm -f ob.js uglify.js",
     "test": "mocha"
+  },
+  "dependencies": {
+    "acorn": "^6.0.4",
+    "recast": "^0.16.1"
   }
 }
