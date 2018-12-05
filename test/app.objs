@@ -172,13 +172,13 @@ vc = null;
 
 - (BOOL)application:(id)application didFinishLaunchingWithOptions:(id)launchOptions {
 	const ret = %orig;
-	try {
+   try {
 		NSLog([arr objectAtIndex:2]);
-	} catch (e) {
+   } catch (e) {
 		NSLog("JS EXCEPTION RAISED!");
 		NSLog(e.message);
 		NSLog("JS EXCEPTION END");
-	}
+   }
 	NSLog(resourcesPath);
 	NSLog(strcmp("hello", "henlo"));
 	printf("one plus one equals %u\ntwo plus two is (text): %s\n", @cast(unsigned int)(1+1), @cast(char *)("four"));
@@ -188,7 +188,7 @@ vc = null;
 	(*boundsPtr).size.width = 1234;
 	NSLog(*boundsPtr);
 
-	NSLog(@[[UIColor colorWithRed:1 green:0.5 blue:0 alpha:0]]);
+	NSLog(@[[NSNull null], [UIColor colorWithRed:1 green:0.5 blue:0 alpha:0]]);
 
 	[self someNewFunction];
 
@@ -216,4 +216,3 @@ vc = null;
 }
 
 %end
-

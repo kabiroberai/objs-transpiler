@@ -32,12 +32,12 @@ module.exports = function(source, uglify) {
 		sourceFileName: "main.objs"
 	});
 	recastJX(ast);
-	const result = recast.print(ast, {
+	let result = recast.print(ast, {
 		sourceMapName: "recast.js.map"
 	});
 	if (uglify) {
-		return uglifyCode(result).code;
-	} else {
-		return result.code;
+		result = uglifyCode(result);
 	}
+	result.map = JSON.stringify(result.map);
+	return result;
 };

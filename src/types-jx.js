@@ -36,7 +36,7 @@ module.exports = function() {
 		.finalize();
 
 	def("JXBlock")
-		.bases("Node")
+		.bases("Expression")
 		.field("returnType", or(def("JXType"), null), () => null)
 		.field("argTypes", [def("JXType")])
         .field("body", def("BlockStatement"))
