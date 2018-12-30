@@ -654,7 +654,7 @@ function plugin(Parser) {
 				this.next();
 				let elements = this.parseExprList(tt.bracketR, true, true, refDestructuringErrors);
 				node.value = this.jx_finishArrayNode(arrayNode, elements);
-			} else {
+			} else if (this.type === tt.num || this.type === tt.string) {
 				// numeric or string literal
 				node.value = this.parseLiteral();
 			}

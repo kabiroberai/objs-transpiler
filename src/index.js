@@ -1,12 +1,6 @@
-MOZ_SourceMap = require("source-map");
 const acorn = require("acorn");
-const recast = require("recast");
-const recastAcornParser = require("./recast-acorn-parser.js");
-const recastJX = require("./recast-jx.js");
 const acornJX = require("./acorn-jx.js");
-
 const acornJXParser = acorn.Parser.extend(acornJX());
-const recastAcornJXParser = recastAcornParser(acornJXParser);
 
 function uglifyCode(source) {
 	require('../uglify.js');
@@ -26,7 +20,14 @@ function uglifyCode(source) {
 	return UglifyJS.minify(source.code, options);
 }
 
-module.exports = function(source, uglify) {
+module.exports.transpile = function(source, uglify) {
+	MOZ_SourceMap = require("source-map");
+
+	const recast = require("recast");
+	const recastJX = require("./recast-jx.js");
+	const recastAcornParser = require("./recast-acorn-parser.js");
+	const recastAcornJXParser = recastAcornParser(acornJXParser);
+
 	let ast = recast.parse(source, {
 		parser: recastAcornJXParser,
 		sourceFileName: "main.objs"
@@ -40,4 +41,8 @@ module.exports = function(source, uglify) {
 	}
 	result.map = JSON.stringify(result.map);
 	return result;
-};
+}
+
+module.exports.tokenize = function(source) {
+	return [...acornJXParser.tokenizer(source)];
+}

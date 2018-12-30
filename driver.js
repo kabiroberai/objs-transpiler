@@ -1,5 +1,5 @@
 const fs = require('fs');
-const transpile = require("./src/index.js");
+const objs = require("./src/index.js");
 fs.readFile('test/app.objs', function (err, file) {
-	console.log(transpile(file).code);
+	console.log(objs.transpile(file).code);
 });
