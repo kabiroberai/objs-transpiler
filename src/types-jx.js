@@ -73,9 +73,19 @@ module.exports = function() {
 		.field("argTypes", [def("JXType")])
 		.finalize();
 
+	def("JXExternDef")
+		.bases("Statement")
+		.field("value", def("JXType"))
+		.finalize();
+
 	def("JXDeref")
 		.bases("Expression")
-		.field("argument", def("Pattern"))
+		.field("argument", def("Expression"))
+		.finalize();
+
+	def("JXRef")
+		.bases("Expression")
+		.field("value", String)
 		.finalize();
 
 	// used at both runtime and compile time

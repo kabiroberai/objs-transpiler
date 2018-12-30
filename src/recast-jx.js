@@ -96,12 +96,25 @@ module.exports = function(ast) {
 
 			return b.expressionStatement(b.callExpression(b.identifier("loadFunc"), [
 				b.literal(def.returnType.name),
-				b.literal(sig)
+				b.literal(sig),
+				b.literal(true)
 			]));
+		}),
+
+		visitJXExternDef: makeTraversalFunction(function(def) {
+			return b.expressionStatement(b.callExpression(b.identifier("loadSymbol"), [
+				b.literal(def.value.name),
+				b.literal(def.value.encoding),
+				b.literal(true)
+			]))
 		}),
 
 		visitJXDeref: makeTraversalFunction(function(deref) {
 			return b.memberExpression(deref.argument, b.identifier("pointee"))
+		}),
+
+		visitJXRef: makeTraversalFunction(function(ref) {
+			return b.callExpression(b.identifier("getRef"), [b.literal(ref.value)]);
 		}),
 
 		visitJXStructDef: makeTraversalFunction(function(def) {

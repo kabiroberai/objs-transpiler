@@ -133,6 +133,19 @@ const UITableViewCellStyle = Object.freeze({
 @function int strcmp(char *, char *);
 @function int printf(char *, ...);
 
+@extern char **environ;
+
+NSLog("Environ address: " + &environ)
+
+var environArr = [];
+for (let i = 0;;i++) {
+	let element = environ[i];
+	if (element === null) break;
+	environArr.push(element);
+}
+
+NSLog("Environ: " + environArr);
+
 var pointer = Pointer(@encode(id));
 *pointer = "Hello";
 [HackObjC somePtrAcceptor:pointer];
@@ -164,7 +177,39 @@ let vc = [[AClass alloc] initWithMsg:"This is a message"];
 NSLog([vc someFunc]);
 vc = null;
 
+@function void *dlopen(char *, int);
+@function void *dlsym(void *, char *);
+@function void dispatch_async(id, id);
+
+dlopen("/System/Library/Frameworks/LocalAuthentication.framework/LocalAuthentication", 0x00001 /* RTLD_LAZY */);
+
+// %hook NSBundle
+
+// - (id)infoDictionary {
+// 	const dict = [%orig mutableCopy];
+// 	[dict setObject:"Please authenticate" forKey:"NSFaceIDUsageDescription"];
+// 	// NSLog(dict);
+// 	return dict.copy;
+// }
+
+// %end
+
+let hasSucceeded = false;
+
 %hook SuperchargerTests.AppDelegate
+
+// - (void)applicationDidBecomeActive:(id)application {
+// 	if (hasSucceeded) return;
+// 	let context = [LAContext new];
+// 	context.localizedCancelTitle = "Cancel";
+// 	[context evaluatePolicy:1 localizedReason:"Please authenticate" reply:^(BOOL success, id error) {
+// 		if (success) {
+// 			hasSucceeded = true;
+// 		} else {
+// 			[UIApplication.sharedApplication suspend];
+// 		}
+// 	}];
+// }
 
 - (void)someNewFunction {
 	NSLog("New function called!");

@@ -27,10 +27,12 @@ const tok = {
 	variadicType: new TokenType("jxVariadicType"),
 	structType: new TokenType("jxStructType"),
 	structDef: new TokenType("jxStructDef"),
-	deref: new TokenType("jxDeref", { prefix: true }),
+	deref: new TokenType("jxDeref", { prefix: true, beforeExpr: true, startsExpr: true }),
+	ref: new TokenType("jxRef", { prefix: true, startsExpr: true }),
 	sizeof: new TokenType("jxSizeof", { startsExpr: true }),
 	encode: new TokenType("jxEncode", { startsExpr: true }),
 	cast: new TokenType("jxCast"),
+	extern: new TokenType("jxExtern"),
 };
 
 const TokContext = acorn.TokContext;
@@ -63,19 +65,26 @@ function plugin(Parser) {
 		}
 
 		parseMaybeUnary(refDestructuringErrors, sawUnary) {
-			if (!this.type.prefix || this.value !== "*") {
-				return super.parseMaybeUnary(refDestructuringErrors, sawUnary);
+			let isRef = this.type === tok.ref;
+			let isDeref = this.type === tok.deref;
+
+			if (isRef || isDeref) {
+				const node = this.startNode();
+			    node.operator = this.value;
+			    node.prefix = true;
+			    this.next();
+
+			    if (isRef) {
+			    	node.value = this.parseIdent(false).name;
+			    } else {
+			    	node.argument = this.parseMaybeUnary(null, true);
+			    }
+
+			    this.checkExpressionErrors(refDestructuringErrors, true);
+			    return this.finishNode(node, isRef ? "JXRef" : "JXDeref");
 			}
 
-			// deref operator
-			const node = this.startNode();
-		    node.operator = this.value;
-		    node.prefix = true;
-		    this.next();
-		    node.argument = this.parseMaybeUnary(null, true);
-		    this.checkExpressionErrors(refDestructuringErrors, true);
-		    this.checkLVal(node.argument);
-		    return this.finishNode(node, "JXDeref");
+			return super.parseMaybeUnary(refDestructuringErrors, sawUnary);
 		}
 
 		toAssignable(node, isBinding, refDestructuringErrors) {
@@ -87,11 +96,8 @@ function plugin(Parser) {
 		}
 
 		checkLVal(expr, bindingType, checkClashes) {
-			if (expr.type !== "JXDeref") {
-				return super.checkLVal(expr, bindingType, checkClashes);
-			}
-
-			this.checkLVal(expr.argument, bindingType, checkClashes);
+			return expr.type === "JXDeref" 
+				|| super.checkLVal(expr, bindingType, checkClashes);
 		}
 
 		readToken(code) {
@@ -137,6 +143,10 @@ function plugin(Parser) {
 					return this.finishToken(tok.cast);
 				}
 
+				if (this.jx_eatTokenWord("@extern")) {
+					return this.finishToken(tok.extern);
+				}
+
 				++this.pos;
 				return this.finishToken(tok.at);
 			}
@@ -166,6 +176,11 @@ function plugin(Parser) {
 
 			if (this.jx_eatTokenWord("struct")) {
 				return this.finishToken(tok.structType);
+			}
+
+			if (this.exprAllowed && code === 38) { // &
+				++this.pos;
+				return this.finishToken(tok.ref, "&");
 			}
 
 			if (this.exprAllowed && code === 42) { // *
@@ -227,6 +242,10 @@ function plugin(Parser) {
 				return this.jx_parseFuncDef();
 			}
 
+			if (this.type === tok.extern) {
+				return this.jx_parseExternDef();
+			}
+
 			if (this.type === tok.structDef) {
 				return this.jx_parseStructDef();
 			}
@@ -278,10 +297,19 @@ function plugin(Parser) {
 				secondLastPart = typeArr[typeArr.length - 2];
 			}
 
-			// use `^t` for pointers, except `char *` which is encoded as just `*`
-			if (!starRegex.test(lastPart) && secondLastPart !== "char") {
-				typeArr.pop();
-				return "^".repeat(lastPart.length) + this.jx_parseTypeArr(typeArr);
+			if (secondLastPart === "char" && lastPart === "*") {
+				// string
+				return this.jx_parseBasicType(typeArr);
+			} else if (lastPart[lastPart.length - 1] === "*") {
+				// other type of pointer
+				if (lastPart.length === 1) {
+					// if it's a single * then remove it and parse the rest
+					typeArr.pop();
+				} else {
+					// if it's more than a single star then remove the last star and parse the rest
+					typeArr[typeArr.length - 1] = lastPart.substring(0, lastPart.length - 1);
+				}
+				return `^${this.jx_parseTypeArr(typeArr)}`;
 			} else if (typeof lastPart === "number") {
 				const len = typeArr.pop();
 				return `[${len}${this.jx_parseTypeArr(typeArr)}]`;
@@ -400,14 +428,12 @@ function plugin(Parser) {
 			return node;
 		}
 
-		// called *before* opening parenL. Eats closing parenR
-		jx_parseArgTypeList(hasNames, allowVariadic) {
-			this.expect(tt.parenL);
-
+		// called *after* opening parenL. Eats closing parenR
+		jx_parseArgTypeList(hasNames, allowVoid, allowVariadic) {
 			let argTypes = [];
 
 			for (;;) {
-				const argType = this.jx_parseType(hasNames, false, allowVariadic);
+				const argType = this.jx_parseType(hasNames, allowVoid, allowVariadic);
 				argTypes.push(argType);
 				if (this.eat(tt.parenR)) {
 					return argTypes;
@@ -417,13 +443,38 @@ function plugin(Parser) {
 			}
 		}
 
+		jx_parseExternDef() {
+			const node = this.startNode();
+
+			this.next();
+
+			node.value = this.jx_parseType(true, false);
+
+			this.eat(tt.semi);
+
+			return this.finishNode(node, "JXExternDef");
+		}
+
 		jx_parseFuncDef() {
 			const node = this.startNode();
 
 			this.next();
 
 			node.returnType = this.jx_parseType(true, true);
-			node.argTypes = this.jx_parseArgTypeList(false, true);
+
+			this.expect(tt.parenL);
+			if (this.eat(tt.parenR)) {
+				node.argTypes = [];
+			} else {
+				node.argTypes = this.jx_parseArgTypeList(false, true, true);
+				// if argTypes contains a void type
+				if (node.argTypes.find(e => e.encoding === "v") !== undefined) {
+					if (node.argTypes.length !== 1) {
+						this.raise(this.pos, "'void' must be the first and only parameter if specified");
+					}
+					node.argTypes = [];
+				}
+			}
 
 			// semicolon isn't required, but if it's there then eat it
 			this.eat(tt.semi);
@@ -447,6 +498,7 @@ function plugin(Parser) {
 			node.params = [];
 
 			if (this.type !== tt.braceL) {
+				this.expect(tt.parenL);
 				node.argTypes = this.jx_parseArgTypeList(true);
 			} else {
 				node.argTypes = [];
