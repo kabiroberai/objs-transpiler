@@ -21,12 +21,12 @@ function uglifyCode(source) {
 }
 
 module.exports.transpile = function(source, uglify) {
-	MOZ_SourceMap = require("source-map");
-
+	const MOZ_SourceMap = require("source-map");
 	const recast = require("recast");
 	const recastJX = require("./recast-jx.js");
 	const recastAcornParser = require("./recast-acorn-parser.js");
 	const recastAcornJXParser = recastAcornParser(acornJXParser);
+	const babel = require("@babel/core");
 
 	let ast = recast.parse(source, {
 		parser: recastAcornJXParser,
@@ -36,6 +36,21 @@ module.exports.transpile = function(source, uglify) {
 	let result = recast.print(ast, {
 		sourceMapName: "recast.js.map"
 	});
+	result = babel.transform(result.code, {
+		inputSourceMap: result.map,
+		sourceMaps: true,
+		sourceFileName: "babel.js.map",
+		sourceType: "script",
+  		presets: [
+  			[
+  				require("@babel/preset-env"),
+  				{
+  					"targets": "iOS 9"
+  				}
+  			]
+  		]
+	});
+
 	if (uglify) {
 		result = uglifyCode(result);
 	}

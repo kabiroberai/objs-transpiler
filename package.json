@@ -7,17 +7,27 @@
   "main": "index.js",
   "author": "Kabir Oberai",
   "devDependencies": {
-    "mocha": "^4.0.1",
-    "uglify-es": "^3.0.25",
-    "webpack": "^3.3.0"
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "mocha": "^5.2.0",
+    "uglify-es": "^3.3.9",
+    "webpack": "^4.28.3",
+    "webpack-cli": "^3.2.0"
   },
   "scripts": {
-    "build:": "uglifyjs --self -cmo uglify.js && webpack && rm uglify.js && uglifyjs ob.js -o ob.js # package standalone uglify, build everything, delete uglify, uglify package",
+    "build:": "uglifyjs --self -cmo uglify.js && webpack && rm uglify.js && babel ob.js --out-file ob.js && uglifyjs ob.js -o ob.js # package standalone uglify, build everything, delete uglify, babelify package, uglify package",
     "build:clean": "rm -f ob.js uglify.js",
     "test": "mocha"
   },
   "dependencies": {
-    "acorn": "^6.0.4",
-    "recast": "^0.16.1"
-  }
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "acorn": "^6.0.5",
+    "recast": "^0.16.1",
+    "source-map": "^0.7.3"
+  },
+  "browserslist": [
+    "iOS 9"
+  ]
 }
