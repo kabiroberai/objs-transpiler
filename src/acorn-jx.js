@@ -7,7 +7,6 @@ module.exports = function() {
 };
 
 const SCOPE_FUNCTION = 2;
-const SCOPE_SUPER = 64;
 
 const acorn = require("acorn");
 
@@ -40,8 +39,6 @@ const ctx = {
 	cls: new TokContext("@class ...", true),
 	objcType: new TokContext("jxObjcType", true)
 };
-
-const starRegex = new RegExp("[^\s\*]");
 
 tok.startClass.updateContext = function() {
 	this.context.push(ctx.cls);
@@ -277,7 +274,6 @@ function plugin(Parser) {
 				"Class": "#",
 				"SEL": ":",
 				"...": "..." // for varargs
-				// TODO: Add full support for structs and arrays
 			};
 
 			let enc = types[type];
@@ -289,8 +285,6 @@ function plugin(Parser) {
 		}
 
 		jx_parseTypeArr(typeArr) {
-			let encoding;
-
 			let lastPart = typeArr[typeArr.length - 1];
 			let secondLastPart;
 			if (typeArr.length > 1) {
@@ -325,6 +319,8 @@ function plugin(Parser) {
 		}
 
 		jx_parseType(hasName, allowVoid, allowVariadic) {
+			// TODO: Add function and block support
+
 			const node = this.startNode();
 
 			let typeArr = [];

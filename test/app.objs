@@ -103,10 +103,13 @@ const UITableViewCellStyle = Object.freeze({
 
 @end
 
-[HackObjC someFuncWithBlock:^int(id str) {
+let block = ^int(id str) {
 	NSLog("Block received message: " + str);
 	return 10;
-}];
+};
+NSLog("Custom block call: " + block("Custom!"));
+
+[HackObjC someFuncWithBlock:block];
 
 @struct CGSize {
 	double width;
