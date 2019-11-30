@@ -220,14 +220,17 @@ let hasSucceeded = false;
 
 - (BOOL)application:(id)application didFinishLaunchingWithOptions:(id)launchOptions {
 	const ret = %orig;
-   try {
+	try {
 		NSLog([arr objectAtIndex:2]);
-   } catch (e) {
+	} catch (e) {
 		NSLog("JS EXCEPTION RAISED!");
 		NSLog(e.message);
 		NSLog("JS EXCEPTION END");
-   }
-	NSLog(resourcesPath);
+	}
+
+	// [NSString idk];
+	// NSLog(resourcesPath);
+
 	NSLog(strcmp("hello", "henlo"));
 	printf("one plus one equals %u\ntwo plus two is (text): %s\n", @cast(unsigned int)(1+1), @cast(char *)("four"));
 
