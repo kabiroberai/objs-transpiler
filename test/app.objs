@@ -40,8 +40,8 @@ const UITableViewCellStyle = Object.freeze({
 	if (!cell) {
 		cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyle.default reuseIdentifier:"cell"];
 	}
-	const date = [_objects objectAtIndex:indexPath.row];
-	cell.textLabel.text = [date description];
+	const date = _objects[indexPath.row];
+	cell.textLabel.text = "" + date;
 	return cell;
 }
 
@@ -180,39 +180,55 @@ let vc = [[AClass alloc] initWithMsg:"This is a message"];
 NSLog([vc someFunc]);
 vc = null;
 
+let arr = [NSMutableArray array];
+[arr addObject:@"hi"];
+NSLog("arr object: " + arr[0]);
+arr[0] = @"bye";
+NSLog("new arr object: " + arr[0]);
+
 @function void *dlopen(char *, int);
 @function void *dlsym(void *, char *);
+
+@extern void *_dispatch_main_q;
 @function void dispatch_async(id, id);
 
 dlopen("/System/Library/Frameworks/LocalAuthentication.framework/LocalAuthentication", 0x00001 /* RTLD_LAZY */);
 
-// %hook NSBundle
+%hook NSBundle
 
-// - (id)infoDictionary {
-// 	const dict = [%orig mutableCopy];
-// 	[dict setObject:"Please authenticate" forKey:"NSFaceIDUsageDescription"];
-// 	// NSLog(dict);
-// 	return dict.copy;
-// }
+- (id)infoDictionary {
+	// if (!orig) {
+	// 	NSLog("big oof! " + self);
+	// 	return;
+	// }
+	NSLog("got here!");
+	const dict = [%orig mutableCopy];
+	[dict setObject:"Please authenticate" forKey:"NSFaceIDUsageDescription"];
+	NSLog("modified dict: " + dict);
+	// NSLog(dict);
+	return dict.copy;
+}
 
-// %end
+%end
 
 let hasSucceeded = false;
 
 %hook SuperchargerTests.AppDelegate
 
-// - (void)applicationDidBecomeActive:(id)application {
-// 	if (hasSucceeded) return;
-// 	let context = [LAContext new];
-// 	context.localizedCancelTitle = "Cancel";
-// 	[context evaluatePolicy:1 localizedReason:"Please authenticate" reply:^(BOOL success, id error) {
-// 		if (success) {
-// 			hasSucceeded = true;
-// 		} else {
-// 			[UIApplication.sharedApplication suspend];
-// 		}
-// 	}];
-// }
+- (void)applicationDidBecomeActive:(id)application {
+	if (hasSucceeded) return;
+	let context = [LAContext new];
+	context.localizedCancelTitle = "Cancel";
+	[context evaluatePolicy:1 localizedReason:"Please authenticate" reply:^(BOOL success, id error) {
+		if (success) {
+			hasSucceeded = true;
+		} else {
+			dispatch_async(&_dispatch_main_q, ^{
+				[UIApplication.sharedApplication suspend];
+			});
+		}
+	}];
+}
 
 - (void)someNewFunction {
 	NSLog("New function called!");
@@ -221,7 +237,7 @@ let hasSucceeded = false;
 - (BOOL)application:(id)application didFinishLaunchingWithOptions:(id)launchOptions {
 	const ret = %orig;
 	try {
-		NSLog([arr objectAtIndex:2]);
+		NSLog(arr[2]);
 	} catch (e) {
 		NSLog("JS EXCEPTION RAISED!");
 		NSLog(e.message);
