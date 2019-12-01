@@ -20,7 +20,7 @@ function uglifyCode(source) {
 	return UglifyJS.minify(source.code, options);
 }
 
-module.exports.transpile = function(source, uglify) {
+module.exports.transpile = function(source, minify = false) {
 	const MOZ_SourceMap = require("source-map");
 	const recast = require("recast");
 	const recastJX = require("./recast-jx.js");
@@ -51,9 +51,10 @@ module.exports.transpile = function(source, uglify) {
   		]
 	});
 
-	if (uglify) {
+	if (minify) {
 		result = uglifyCode(result);
 	}
+	console.log(result.map);
 	result.map = JSON.stringify(result.map);
 	return result;
 }
