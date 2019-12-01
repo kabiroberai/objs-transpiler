@@ -20,6 +20,7 @@
     "clean": "rm -f ob.js uglify.js",
     "build:": "npm run build",
     "build:clean": "npm run clean",
+    "driver": "node driver.js",
     "test": "mocha"
   },
   "dependencies": {

@@ -24,15 +24,25 @@ OBJSTranspiler.transpile(source: string, minify: boolean = false): { code: strin
 - `code`: The generated JavaScript code, compatible with the ObjectiveScript runtime
 - `map`: A [source map](https://github.com/mozilla/source-map) representing the entire transformation
 
+```ts
+OBJSTranspiler.tokenize(source: string): Iterable<acorn.Token>
+```
+
+**Parameters**:
+
+- `source`: The input source code written in ObjectiveScript
+
+**Returns**: An `Iterable` of tokens
+
 ## Development
 
 Start by running `npm install` to set up the dependencies.
 
 ### Iteration
 
-Run `node driver.js` to see the output of transpiling `test/app.objs`.
+Run `npm run driver` to see the output of transpiling `test/app.objs` without having to compile the full `ob.js` file.
 
-At present, the `minify` parameter cannot be used during iteration because that involves building `uglify.js` which is an artifact created while performing a full build.
+**Note**: At present, the `minify` parameter cannot be used during iteration because that involves building `uglify.js` which is an artifact created while performing a full build.
 
 ### Full Build
 
@@ -40,7 +50,9 @@ Use `npm run build` to perform a full build. The output will be the `ob.js` file
 
 ### Tests
 
-Execute `npm run test` to run the test suite. Note that test coverage is currently low so the results are not a very strong indicator of regressions.
+Execute `npm test` to run the test suite. 
+
+**Note**: Test coverage is currently low, so the results are not a very strong indicator of regressions.
 
 ### Cleaning
 

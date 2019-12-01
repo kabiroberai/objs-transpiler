@@ -59,5 +59,5 @@ module.exports.transpile = function(source, minify = false) {
 }
 
 module.exports.tokenize = function(source) {
-	return [...acornJXParser.tokenizer(source)];
+	return acornJXParser.tokenizer(source);
 }
