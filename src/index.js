@@ -54,7 +54,6 @@ module.exports.transpile = function(source, minify = false) {
 	if (minify) {
 		result = uglifyCode(result);
 	}
-	console.log(result.map);
 	result.map = JSON.stringify(result.map);
 	return result;
 }
