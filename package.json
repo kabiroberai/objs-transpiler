@@ -16,8 +16,10 @@
     "webpack-cli": "^3.2.0"
   },
   "scripts": {
-    "build:": "uglifyjs --self -cmo uglify.js && webpack && rm uglify.js && babel ob.js --out-file ob.js && uglifyjs ob.js -o ob.js # package standalone uglify, build everything, delete uglify, babelify package, uglify package",
-    "build:clean": "rm -f ob.js uglify.js",
+    "build": "uglifyjs --self -cmo uglify.js && webpack && rm uglify.js && babel ob.js --out-file ob.js && uglifyjs ob.js -o ob.js # package standalone uglify, build everything, delete uglify, babelify package, uglify package",
+    "clean": "rm -f ob.js uglify.js",
+    "build:": "npm run build",
+    "build:clean": "npm run clean",
     "test": "mocha"
   },
   "dependencies": {
