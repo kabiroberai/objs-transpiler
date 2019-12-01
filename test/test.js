@@ -1,68 +1,55 @@
-const transpile = require('../ob.js');
+const _transpile = require('../src/index.js').transpile;
+const transpile = (code) => _transpile(code).code;
+
 const fs = require('fs');
 const assert = require('assert');
 
-// // Run `script` with `ctx` as the global var
-// function run(script, ctx) {
-// 	with (ctx) eval(script);
-// }
-
-// // TODO: Add tests for errors
-
-function describeCode(message, code, execute) {
-	describe(message, function() {
-		before(function() {
-			this.code = transpile(code);
-		});
-
-		execute();
-	});
-}
+// TODO: Add tests for errors
 
 describe("OBJSTranspiler", function() {
 	describe("JXMethodCall", function() {
 		describe("without arguments", function() {
 			it("should compile simple cases correctly", function() {
 				let code = transpile("[NSDate date]");
-				assert.equal(code, 'NSDate["@date"]()');
+				assert.equal(code, 'NSDate["@date"]();');
 			});
 			it("should allow JS keywords to be used as selectors", function() {
 				let code = transpile("[NSArray new]");
-				assert.equal(code, 'NSArray["@new"]()');
+				assert.equal(code, 'NSArray["@new"]();');
 			});
 			it("should work with super calls", function() {
 				let code = transpile("[super init]");
-				assert.equal(code, 'self["^init"]()');
+				assert.equal(code, 'self["^init"]();');
 			});
 			it("should allow expressions to be used as targets", function() {
 				let code = transpile('[foo+bar baz]');
-				assert.equal(code, '(foo + bar)["@baz"]()');
+				assert.equal(code, '(foo + bar)["@baz"]();');
 			});
 			it("should allow other method calls to be used as targets", function() {
 				let code = transpile("[[NSArray alloc] init]");
-				assert.equal(code, 'NSArray["@alloc"]()["@init"]()');
+				assert.equal(code, 'NSArray["@alloc"]()["@init"]();');
 			});
 		});
 		describe("with arguments", function() {
 			it("should compile simple single-argument cases correctly", function() {
 				let code = transpile('[UIImage imageNamed:"Foo"]');
-				assert.equal(code, 'UIImage["@imageNamed:"]("Foo")');
+				assert.equal(code, 'UIImage["@imageNamed:"]("Foo");');
 			});
 			it("should compile simple multi-argument cases correctly", function() {
 				let code = transpile('[Foo fooWithBar:"a" baz:"b"]');
-				assert.equal(code, 'Foo["@fooWithBar:baz:"]("a", "b")');
+				assert.equal(code, 'Foo["@fooWithBar:baz:"]("a", "b");');
 			});
 			it("should work with super calls", function() {
 				let code = transpile('[super initWithBar:"a" baz:"b"]');
-				assert.equal(code, 'self["^initWithBar:baz:"]("a", "b")');
+				assert.equal(code, 'self["^initWithBar:baz:"]("a", "b");');
 			});
 			it("should allow expressions to be used as arguments", function() {
 				let code = transpile('[Foo fooWithBar:"a"+"b" baz:"c"]');
-				assert.equal(code, 'Foo["@fooWithBar:baz:"]("a"+"b", "c")');
+				assert.equal(code, 'Foo["@fooWithBar:baz:"]("a" + "b", "c");');
 			})
 			it("should allow other method calls to be used as arguments", function() {
 				let code = transpile('[Foo fooWithBar:[Bar new] baz:[Baz bazWithArg:0]]');
-				assert.equal(code, 'Foo["@fooWithBar:baz:"](Bar["@new"](), Baz["@bazWithArg:"](0))');
+				assert.equal(code, 'Foo["@fooWithBar:baz:"](Bar["@new"](), Baz["@bazWithArg:"](0));');
 			})
 		});
 		describe("array handling", function() {
@@ -70,31 +57,46 @@ describe("OBJSTranspiler", function() {
 				assert.equal(transpile(code), code);
 			}
 			it("should not detect arrays as method calls", function() {
-				assertPassthrough('[foo, bar]');
+				let code = transpile('[foo, bar]');
+				assert.equal(code, '[foo, bar];');
 			});
 			it("should allow trailing commas in arrays", function() {
-				assertPassthrough('[foo,]');
+				let code = transpile('[foo,]');
+				assert.equal(code, '[foo];');
 			});
 			it("should allow single-element arrays", function() {
-				assertPassthrough('[foo]');
+				let code = transpile('[foo]');
+				assert.equal(code, '[foo];');
 			});
 			it("should allow empty arrays", function() {
-				assertPassthrough('[]');
+				let code = transpile('[]');
+				assert.equal(code, '[];');
 			});
 			it("should allow subscripts", function() {
-				assertPassthrough('[foo, bar][0]');
+				let code = transpile('[foo, bar][0]');
+				assert.equal(code, '[foo, bar][0];');
 			});
 			it("should allow method calls to be nested in arrays", function() {
 				let code = transpile('[foo, [Bar baz]]');
-				assert.equal(code, '[foo, Bar["@baz"]()]');
+				assert.equal(code, '[foo, Bar["@baz"]()];');
 			});
 			it("should allow arrays to be nested in method calls", function() {
 				let code = transpile('[Foo fooWithBar:[baz]]');
-				assert.equal(code, 'Foo["@fooWithBar:"]([baz])');
+				assert.equal(code, 'Foo["@fooWithBar:"]([baz]);');
 			});
 		});
 	});
 });
+
+// function describeCode(message, code, execute) {
+// 	describe(message, function() {
+// 		before(function() {
+// 			this.code = transpile(code);
+// 		});
+
+// 		execute();
+// 	});
+// }
 
 // describe('OBJSTranspiler', function() {
 
