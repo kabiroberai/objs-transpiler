@@ -10,6 +10,12 @@ const UITableViewCellStyle = Object.freeze({
 	default: 0
 });
 
+@class MyOtherViewController : UIViewController <UITableViewDelegate, UITableViewDataSource> {
+	id _objects;
+}
+
+@end
+
 @class MyViewController : UITableViewController {
 	id _objects;
 }
@@ -186,6 +192,8 @@ NSLog("arr object: " + arr[0]);
 arr[0] = @"bye";
 NSLog("new arr object: " + arr[0]);
 
+NSLog(@true);
+
 @function void *dlopen(char *, int);
 @function void *dlsym(void *, char *);
 
@@ -201,10 +209,8 @@ dlopen("/System/Library/Frameworks/LocalAuthentication.framework/LocalAuthentica
 	// 	NSLog("big oof! " + self);
 	// 	return;
 	// }
-	NSLog("got here!");
 	const dict = [%orig mutableCopy];
 	[dict setObject:"Please authenticate" forKey:"NSFaceIDUsageDescription"];
-	NSLog("modified dict: " + dict);
 	// NSLog(dict);
 	return dict.copy;
 }
@@ -215,20 +221,20 @@ let hasSucceeded = false;
 
 %hook SuperchargerTests.AppDelegate
 
-- (void)applicationDidBecomeActive:(id)application {
-	if (hasSucceeded) return;
-	let context = [LAContext new];
-	context.localizedCancelTitle = "Cancel";
-	[context evaluatePolicy:1 localizedReason:"Please authenticate" reply:^(BOOL success, id error) {
-		if (success) {
-			hasSucceeded = true;
-		} else {
-			dispatch_async(&_dispatch_main_q, ^{
-				[UIApplication.sharedApplication suspend];
-			});
-		}
-	}];
-}
+// - (void)applicationDidBecomeActive:(id)application {
+// 	if (hasSucceeded) return;
+// 	let context = [LAContext new];
+// 	context.localizedCancelTitle = "Cancel";
+// 	[context evaluatePolicy:1 localizedReason:"Please authenticate" reply:^(BOOL success, id error) {
+// 		if (success) {
+// 			hasSucceeded = true;
+// 		} else {
+// 			dispatch_async(&_dispatch_main_q, ^{
+// 				[UIApplication.sharedApplication suspend];
+// 			});
+// 		}
+// 	}];
+// }
 
 - (void)someNewFunction {
 	NSLog("New function called!");
@@ -269,7 +275,7 @@ let hasSucceeded = false;
 - (void)sayHelloWithArg1:(id)arg1 arg2:(id)arg2 {
 	NSLog("say hello called!");
 	var origFunc = orig;
-	var alert = [UIAlertController alertControllerWithTitle:"hello" message:"hi" preferredStyle:1];
+	var alert = [global.UIAlertController alertControllerWithTitle:"hello" message:"hi" preferredStyle:1];
 	[alert addAction:[UIAlertAction actionWithTitle:"do something" style:1 handler:^(id int) {
 		origFunc([arg1, arg2]);
 		const window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];

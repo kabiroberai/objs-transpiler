@@ -650,9 +650,11 @@ function plugin(Parser) {
 				this.next();
 				let elements = this.parseExprList(tt.bracketR, true, true, refDestructuringErrors);
 				node.value = this.jx_finishArrayNode(arrayNode, elements);
-			} else if (this.type === tt.num || this.type === tt.string) {
-				// numeric or string literal
+			} else if (this.type === tt.num || this.type === tt.string || this.type === tt._true || this.type === tt._false) {
+				// numeric, string, or boolean literal
 				node.value = this.parseLiteral();
+			} else {
+				this.raise(this.pos, "Expected object, array, numeric, string, or boolean literal");
 			}
 
 			return this.finishNode(node, "JXLiteral");
