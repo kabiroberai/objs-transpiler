@@ -20,7 +20,12 @@ module.exports = function() {
 
 	def("JXLiteral")
 		.bases("Literal")
-		.field("value", def("Literal"))
+		.field("value", or(def("Literal"), def("JXBoolean")))
+		.finalize();
+
+	def("JXBoolean")
+		.bases("Literal")
+		.field("value", Boolean)
 		.finalize();
 
 	def("JXOrigCall")

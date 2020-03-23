@@ -10,6 +10,12 @@ const SCOPE_FUNCTION = 2;
 
 const acorn = require("acorn");
 
+const jxKeywords = {};
+function kw(tokenName, keyword, options = {}) {
+	options.keyword = keyword;
+	return jxKeywords[keyword] = new TokenType(tokenName, options);
+}
+
 const tt = acorn.tokTypes;
 const TokenType = acorn.TokenType;
 const tok = {
@@ -32,12 +38,13 @@ const tok = {
 	encode: new TokenType("jxEncode", { startsExpr: true }),
 	cast: new TokenType("jxCast"),
 	extern: new TokenType("jxExtern"),
+	yes: kw("jxYes", "YES", { startsExpr: true }),
+	no: kw("jxNo", "NO", { startsExpr: true })
 };
 
 const TokContext = acorn.TokContext;
 const ctx = {
-	cls: new TokContext("@class ...", true),
-	objcType: new TokContext("jxObjcType", true)
+	cls: new TokContext("@class ...", true)
 };
 
 tok.startClass.updateContext = function() {
@@ -175,6 +182,14 @@ function plugin(Parser) {
 				return this.finishToken(tok.structType);
 			}
 
+			const keywords = Object.keys(jxKeywords);
+			for (let i = 0; i < keywords.length; i++) {
+				let keyword = keywords[i];
+				if (this.jx_eatTokenWord(keyword)) {
+					return this.finishToken(jxKeywords[keyword]);
+				}
+			}
+
 			if (this.exprAllowed && code === 38) { // &
 				++this.pos;
 				return this.finishToken(tok.ref, "&");
@@ -191,10 +206,6 @@ function plugin(Parser) {
 		parseExprAtom(refDestructuringErrors) {
 			const startPos = this.start, startLoc = this.startLoc;
 
-			if (this.type === tt.bracketL) {
-				return this.jx_parseMaybeMethodCall(refDestructuringErrors);
-			}
-
 			if (this.eat(tok.at)) {
 				if (this.type === tt.parenL) {
 					return this.jx_parseBox(startPos, startLoc);
@@ -203,24 +214,23 @@ function plugin(Parser) {
 				}
 			}
 
-			if (this.type === tok.origCall) {
+			switch (this.type) {
+			case tt.bracketL:
+				return this.jx_parseMaybeMethodCall(refDestructuringErrors);
+			case tok.origCall:
 				return this.jx_parseOrigCall();
-			}
-
-			if (this.type === tok.blockStart) {
+			case tok.blockStart:
 				return this.jx_parseBlock();
-			}
-
-			if (this.type === tok.sizeof) {
+			case tok.sizeof:
 				return this.jx_parseSizeof();
-			}
-
-			if (this.type === tok.encode) {
+			case tok.encode:
 				return this.jx_parseEncode();
-			}
-
-			if (this.type === tok.cast) {
+			case tok.cast:
 				return this.jx_parseCast();
+			case tok.yes:
+				return this.jx_parseBooleanLiteral(true);
+			case tok.no:
+				return this.jx_parseBooleanLiteral(false);
 			}
 
 			return super.parseExprAtom(refDestructuringErrors);
@@ -248,6 +258,13 @@ function plugin(Parser) {
 			}
 
 			return super.parseStatement(context, topLevel, exports);
+		}
+
+		jx_parseBooleanLiteral(value) {
+			const node = this.startNode();
+			node.value = value;
+			this.next();
+			return this.finishNode(node, "JXBoolean");
 		}
 
 		jx_parseBasicType(typeArr) {
@@ -371,8 +388,6 @@ function plugin(Parser) {
 			this.expect(tt.parenR);
 
 			return node;
-
-			return this.finishNode(node, nodeName);
 		}
 
 		jx_parseCast() {
@@ -653,6 +668,10 @@ function plugin(Parser) {
 			} else if (this.type === tt.num || this.type === tt.string || this.type === tt._true || this.type === tt._false) {
 				// numeric, string, or boolean literal
 				node.value = this.parseLiteral();
+			} else if (this.type === tok.yes) {
+				node.value = this.jx_parseBooleanLiteral(true);
+			} else if (this.type == tok.no) {
+				node.value = this.jx_parseBooleanLiteral(false);
 			} else {
 				this.raise(this.pos, "Expected object, array, numeric, string, or boolean literal");
 			}

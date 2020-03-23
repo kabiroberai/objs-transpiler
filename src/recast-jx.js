@@ -36,6 +36,10 @@ module.exports = function(ast) {
 			return makeBoxExpression(box.value);
 		}),
 
+		visitJXBoolean: makeTraversalFunction(function(boolean) {
+			return b.literal(boolean.value);
+		}),
+
 		visitJXLiteral: makeTraversalFunction(function(literal) {
 			return makeBoxExpression(literal.value);
 		}),

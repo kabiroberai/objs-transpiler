@@ -60,7 +60,7 @@ const UITableViewCellStyle = Object.freeze({
 // MARK:- Table View Delegate
 
 - (void)tableView:(id)tableView didSelectRowAtIndexPath:(id)indexPath {
-	[tableView deselectRowAtIndexPath:indexPath animated:true];
+	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (void)dealloc {
@@ -192,7 +192,7 @@ NSLog("arr object: " + arr[0]);
 arr[0] = @"bye";
 NSLog("new arr object: " + arr[0]);
 
-NSLog(@true);
+NSLog(@NO);
 
 @function void *dlopen(char *, int);
 @function void *dlsym(void *, char *);
@@ -285,7 +285,7 @@ let hasSucceeded = false;
 		window.rootViewController = nav;
 		[window makeKeyAndVisible];
 	}]];
-	[self presentViewController:alert animated:true completion:null];
+	[self presentViewController:alert animated:YES completion:null];
 }
 
 %end
